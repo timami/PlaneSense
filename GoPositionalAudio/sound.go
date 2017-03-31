@@ -160,8 +160,8 @@ func calculate () {
 	bp := LocationToPoint(b)
 
 	br = RotateGlobe (b, a, bp.radius, ap.radius)
-    if (br.z*br.z + br.y*br.y > 1.0e-6) {
-		theta = math.Atan2(br.z, br.y) * 180.0 / math.Pi
+    if (br.pz*br.pz + br.py*br.py > 1.0e-6) {
+		theta = math.Atan2(br.pz, br.py) * 180.0 / math.Pi
 		azimuth = 90.0 - theta
 		if (azimuth < 0.0) {
 			azimuth += 360.0
