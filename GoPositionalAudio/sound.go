@@ -150,4 +150,26 @@ func NormVectorDiff(b,a) {
 	
 	dist = math.sqrt(distance2);
 	ret := normalDiff(ndx: (dx/dist), ndy: (dy/dist), ndz: (dz/dist), radius: 1.0)
+	return ret
+}
+
+func calculate () {
+	ap := LocationToPoint(a)
+	bp := LocationToPoint(b)
+	
+	br = RotateGlobe (b, a, bp.radius, ap.radius)
+    if (br.z*br.z + br.y*br.y > 1.0e-6) {
+		theta = math.Atan2(br.z, br.y) * 180.0 / math.Pi
+		azimuth = 90.0 - theta
+		if (azimuth < 0.0) {
+			azimuth += 360.0
+		}
+		if (azimuth > 360.0) {
+			azimuth -= 360.0
+		}
+	}
+	bma = NormVectorDiff(bp, ap)
+	if (bma != null) {
+		altitude = 90.0 - (180.0 / math.Pi)*math.Acos(bma.ndx*ap.pnx + bma.ndy*ap.pny + bma.ndz*ap.pnz)
+	}
 }
