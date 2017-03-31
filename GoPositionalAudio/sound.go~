@@ -61,8 +61,8 @@ func LocationToPoint(c Plane) {
 
 	lat := c.Lat  * math.Pi / 180
 	lng := c.Lng * math.Pi / 180
-	radius = EarthRadiusInMeters(lat) // Earths radius
-	clat = GeocentricLatitude(lat)
+	radius := EarthRadiusInMeters(lat) // Earths radius
+	clat := GeocentricLatitude(lat)
 
 	cosLon := math.Cos(lon)
 	sinLon := math.Sin(lon)
@@ -84,6 +84,27 @@ func LocationToPoint(c Plane) {
     y += c.elv * ny
     z += c.elv * nz
 
-	ret := Point(px:x, py:y, pz:z, pradius:radius, pnx:nx, pny:ny, pnz:nz))
-	return ret;
+	ret := Point(px:x, py:y, pz:z, pradius:radius, pnx:nx, pny:ny, pnz:nz)
+	return ret
+}
+
+func distanceBetweenPoints (pA, pB)
+{
+	dx := pA.px - pB.px
+	dy := pA.py - pB.py
+	dz := pA.pz - pB.pz
+	distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+	return distance
+}
+
+func NormVectorDiff(b,a) {
+	dx := b.px - a.px
+	dy := b.py - a.py
+	dz := b.pz - a.pz
+	distance2 = dx*dx + dy*dy + dz*dz;
+	if (distance2 == 0) {
+		return null;
+	}
+	dist = math.sqrt(distance2);
+	
 }

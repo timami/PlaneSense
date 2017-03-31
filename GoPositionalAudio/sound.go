@@ -20,6 +20,13 @@ type Plane struct {
 	TrueCourse float32
 }
 
+type NormalDiff struct {
+	ndx float32
+	ndy float32
+	ndz float32
+	radius float32
+}
+
 type Point struct {
 	px float32
 	py float32
@@ -61,8 +68,8 @@ func LocationToPoint(c Plane) {
 
 	lat := c.Lat  * math.Pi / 180
 	lng := c.Lng * math.Pi / 180
-	radius = EarthRadiusInMeters(lat) // Earths radius
-	clat = GeocentricLatitude(lat)
+	radius := EarthRadiusInMeters(lat) // Earths radius
+	clat := GeocentricLatitude(lat)
 
 	cosLon := math.Cos(lon)
 	sinLon := math.Sin(lon)
@@ -90,9 +97,21 @@ func LocationToPoint(c Plane) {
 
 func distanceBetweenPoints (pA, pB)
 {
-	dx := pA.px - pB.px;
-	dy := pA.py - pB.py;
-	dz := pA.pz - pB.pz;
+	dx := pA.px - pB.px
+	dy := pA.py - pB.py
+	dz := pA.pz - pB.pz
 	distance = math.sqrt(dx*dx + dy*dy + dz*dz)
 	return distance
+}
+
+func NormVectorDiff(b,a) {
+	dx := b.px - a.px
+	dy := b.py - a.py
+	dz := b.pz - a.pz
+	distance2 = dx*dx + dy*dy + dz*dz;
+	if (distance2 == 0) {
+		return null;
+	}
+	dist = math.sqrt(distance2);
+	ret := normalDiff(ndx: (dx/dist), ndy: (dy/dist), ndz: (dz/dist), radius: 1.0)
 }
