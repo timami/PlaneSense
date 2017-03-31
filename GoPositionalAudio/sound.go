@@ -13,36 +13,36 @@ func main() {
 
 type Plane struct {
 
-	Lat float32
-	Lng float32
-	Alt int32
+	Lat float64
+	Lng float64
+	Alt float64
 	Tail string
-	TrueCourse float32
+	TrueCourse float64
 }
 
-type Rotatglobestruct struct{
+type Rotateglobestruct struct{
 
-	px: float32
-	py: float32
-	pz: float32
-	pradius: float32
+	px float64
+	py float64
+	pz float64
+	pradius float64
 }
 
 type NormalDiff struct {
-	ndx float32
-	ndy float32
-	ndz float32
-	radius float32
+	ndx float64
+	ndy float64
+	ndz float64
+	radius float64
 }
 
 type Point struct {
-	px float32
-	py float32
-	pz float32
-	pradius float32
-	pnx float32
-	pny float32
-	pnz float32
+	px float64
+	py float64
+	pz float64
+	pradius float64
+	pnx float64
+	pny float64
+	pnz float64
 }
 
 func playSound(them Plane, me Plane) {
@@ -54,7 +54,7 @@ func playSound(them Plane, me Plane) {
 // The following code is based off cosinekitty.com/compass.html
 
 
-func EarthRadiusInMeters(latRadians float32) {
+func EarthRadiusInMeters(latRadians float64) float64 {
 	a:= 6378137.0
 	b:= 6356752.3
 	cos := math.Cos(latRadians)
@@ -64,20 +64,22 @@ func EarthRadiusInMeters(latRadians float32) {
 	t3 := a * cos
 	t4 := b * sin
 
-	return math.Sqrt((t1*t1 + t2*t2) / (t3*t3 + t4*t4))
+	mathlol:= (t1*t1 + t2*t2) / (t3*t3 + t4*t4)
+	ret:= math.Sqrt(mathlol)
+	return ret
 }
 
-func GeocentricLatitude(lat float32) {
-	e2 = 0.00669437999014
-	clat = math.Atan((1.0 - e2) * math.Tan(lat))
+func GeocentricLatitude(lat float64) float64 {
+	e2 := 0.00669437999014
+	clat := math.Atan((1.0 - e2) * math.Tan(lat))
 	return clat
 }
 
-func RotateGlobe (b float32, a float32, bradius float32, aradius float32) {
+func RotateGlobe (b Plane, a Plane, bradius float64, aradius float64) Rotateglobestruct {
 
 		// Get modified coordinates of 'b' by rotating the globe so that 'a' is at lat=0, lon=0.
 		br := Plane{Lat: b.Lat, Lng: (b.Lng - a.Lng), Alt: b.Alt, TrueCourse : 0} // putting zero for true course because its not used
-		brp := LocationToPoint(br, oblate)
+		brp := LocationToPoint(br)
 
 		// Rotate brp cartesian coordinates around the z-axis by a.lon degrees,
 		// then around the y-axis by a.lat degrees.
@@ -87,47 +89,47 @@ func RotateGlobe (b float32, a float32, bradius float32, aradius float32) {
 		// So we will look the other way making the x-axis pointing right, the z-axis
 		// pointing up, and the rotation treated as negative.
 
-		alat := -a.lat * math.Pi / 180.0
-		alat := GeocentricLatitude(alat)
+		var alat float64 = -a.Lat * math.Pi / 180
+		alat = GeocentricLatitude(alat)
 
 		acos := math.Cos(alat)
 		asin := math.Sin(alat)
 
-		bx := (brp.x * acos) - (brp.z * asin)
-		by := brp.y
-		bz := (brp.x * asin) + (brp.z * acos)
+		bx := (brp.px * acos) - (brp.pz * asin)
+		by := brp.py
+		bz := (brp.px * asin) + (brp.pz * acos)
 
-		return Rotatglobestruct{px: bx, py: by, pz: bz, pradius: bradius}
+		return Rotateglobestruct{px: bx, py: by, pz: bz, pradius: bradius}
 }
 
-func LocationToPoint(c Plane) {
+func LocationToPoint(c Plane) Point{
 
 	lat := c.Lat  * math.Pi / 180
 	lng := c.Lng * math.Pi / 180
 	radius := EarthRadiusInMeters(lat) // Earths radius
 	clat := GeocentricLatitude(lat)
 
-	cosLon := math.Cos(lon)
-	sinLon := math.Sin(lon)
+	cosLon := math.Cos(lng)
+	sinLon := math.Sin(lng)
 	cosLat := math.Cos(clat)
 	sinLat := math.Sin(clat)
 
-	x:= radius * cosLon * cosLat
-	y := radius * sinLon * cosLat
-	z := radius * sinLat
+	var x float64 = radius * cosLon * cosLat
+	var y float64 = radius * sinLon * cosLat
+	var z float64 = radius * sinLat
 
 	cosGlat := math.Cos(lat)
     sinGlat := math.Sin(lat)
     //Normal Vector
-    nx := cosGlat * cosLon
-    ny := cosGlat * sinLon
-    nz := sinGlat
+    var nx float64 = cosGlat * cosLon
+    var ny float64 = cosGlat * sinLon
+    var nz float64 = sinGlat
 
-    x += c.elv * nx
-    y += c.elv * ny
-    z += c.elv * nz
+    x += c.Alt * nx
+    y += c.Alt * ny
+    z += c.Alt * nz
 
-	ret := Point(px:x, py:y, pz:z, pradius:radius, pnx:nx, pny:ny, pnz:nz)
+	ret := Point{px:x, py:y, pz:z, pradius:radius, pnx:nx, pny:ny, pnz:nz}
 	return ret
 }
 
@@ -135,7 +137,7 @@ func distanceBetweenPoints (pA, pB) {
 	dx := pA.px - pB.px
 	dy := pA.py - pB.py
 	dz := pA.pz - pB.pz
-	distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+	distance = math.Sqrt(dx*dx + dy*dy + dz*dz)
 	return distance
 }
 
@@ -147,16 +149,16 @@ func NormVectorDiff(b,a) {
 	if (distance2 == 0) {
 		return null;
 	}
-	
-	dist = math.sqrt(distance2);
-	ret := normalDiff(ndx: (dx/dist), ndy: (dy/dist), ndz: (dz/dist), radius: 1.0)
+
+	dist = math.Sqrt(distance2);
+	ret := NormalDiff{ndx: (dx/dist), ndy: (dy/dist), ndz: (dz/dist), radius: 1.0}
 	return ret
 }
 
 func calculate () {
 	ap := LocationToPoint(a)
 	bp := LocationToPoint(b)
-	
+
 	br = RotateGlobe (b, a, bp.radius, ap.radius)
     if (br.z*br.z + br.y*br.y > 1.0e-6) {
 		theta = math.Atan2(br.z, br.y) * 180.0 / math.Pi
