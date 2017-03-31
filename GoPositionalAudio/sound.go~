@@ -168,7 +168,7 @@ func calculate () {
 			azimuth -= 360.0
 		}
 	}
-	bma = NormVectorDiff(bp, ap);
+	bma = NormVectorDiff(bp, ap)
 	if (bma != null) {
 		altitude = 90.0 - (180.0 / math.Pi)*math.Acos(bma.ndx*ap.pnx + bma.ndy*ap.pny + bma.ndz*ap.pnz)
 	}
