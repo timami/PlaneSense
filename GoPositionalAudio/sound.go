@@ -8,9 +8,14 @@ func main() {
 	us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
 	them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
 
-	playSound(us, them)
+	final :=playSound(us, them)
+	fmt.Println(final)
 }
-
+type Answer struct {
+	azimuth float64
+	distance float64
+	altitude float64
+}
 type Plane struct {
 
 	Lat float64
@@ -45,9 +50,10 @@ type Point struct {
 	pnz float64
 }
 
-func playSound(them Plane, me Plane) {
+func playSound(them Plane, me Plane) Answer{
 
 	fmt.Println("subconcious")
+	return calculate(me, them)
 
 }
 
@@ -133,36 +139,39 @@ func LocationToPoint(c Plane) Point{
 	return ret
 }
 
-func distanceBetweenPoints (pA, pB) {
+func distanceBetweenPoints (pA Point, pB Point) float64{
 	dx := pA.px - pB.px
 	dy := pA.py - pB.py
 	dz := pA.pz - pB.pz
-	distance = math.Sqrt(dx*dx + dy*dy + dz*dz)
+	distance := math.Sqrt(dx*dx + dy*dy + dz*dz)
 	return distance
 }
 
-func NormVectorDiff(b,a) {
+func NormVectorDiff(b Point,a Point) NormalDiff {
 	dx := b.px - a.px
 	dy := b.py - a.py
 	dz := b.pz - a.pz
-	distance2 = dx*dx + dy*dy + dz*dz;
+	distance2 := dx*dx + dy*dy + dz*dz
 	if (distance2 == 0) {
-		return null;
+		ret:= NormalDiff{ndx: 0, ndy: 0, ndz: 0, radius: 0}
+		return ret;
 	}
 
-	dist = math.Sqrt(distance2);
+	dist := math.Sqrt(distance2);
 	ret := NormalDiff{ndx: (dx/dist), ndy: (dy/dist), ndz: (dz/dist), radius: 1.0}
 	return ret
 }
 
-func calculate () {
+func calculate (a Plane, b Plane) Answer {
 	ap := LocationToPoint(a)
 	bp := LocationToPoint(b)
+	var azimuth float64 = 0;
+	var altitude float64 = 0;
 
-	br = RotateGlobe (b, a, bp.radius, ap.radius)
+	br := RotateGlobe (b, a, bp.pradius, ap.pradius)
     if (br.pz*br.pz + br.py*br.py > 1.0e-6) {
-		theta = math.Atan2(br.pz, br.py) * 180.0 / math.Pi
-		azimuth = 90.0 - theta
+			theta := math.Atan2(br.pz, br.py) * 180.0 / math.Pi
+			azimuth = 90.0 - theta
 		if (azimuth < 0.0) {
 			azimuth += 360.0
 		}
@@ -170,8 +179,10 @@ func calculate () {
 			azimuth -= 360.0
 		}
 	}
-	bma = NormVectorDiff(bp, ap)
-	if (bma != null) {
+	bma := NormVectorDiff(bp, ap)
+	if (0 != (bma.ndx+bma.ndy+bma.ndz)) {
 		altitude = 90.0 - (180.0 / math.Pi)*math.Acos(bma.ndx*ap.pnx + bma.ndy*ap.pny + bma.ndz*ap.pnz)
 	}
+	ret:= Answer {azimuth: azimuth , distance: distanceBetweenPoints(ap, bp), altitude: altitude}
+	return ret;
 }
