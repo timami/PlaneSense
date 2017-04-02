@@ -8,9 +8,9 @@ func main() {
 	us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
 	them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
 
-	final :=playSound(us, them)
-	fmt.Println(final)
+	playSound(us, them)
 }
+
 type Answer struct {
 	azimuth float64
 	distance float64
@@ -50,16 +50,62 @@ type Point struct {
 	pnz float64
 }
 
-func playSound(them Plane, me Plane) Answer{
+type Hrir struct {
+	x float64
+	rx float64
+	gamma float64
+}
 
-	fmt.Println("subconcious")
-	return calculate(me, them)
+func playSound(me Plane, them Plane) {
 
+	// aziumuth, distance, altitude
+	ADA := calculate(me, them)
+
+	// https://en.wikipedia.org/wiki/Spherical_coordinate_system
+	// https://en.wikipedia.org/wiki/Azimuth
+
+	// tested to the best of our knowlege
+	r :=  ADA.distance // distance adduming this is ro
+	beta :=  90 - ADA.altitude // elevation or theta based off wikipeida
+	alpha := ADA.azimuth //azimuth or phi based off wikipedia
+
+	// tested against her code and gives the same results
+	hrirVal:= sphericalToHrir(alpha,beta,r)
+	fmt.Println("hrirVal")
+	fmt.Println(hrirVal)
+}
+
+// McMullen's function
+func sphericalToHrir(alpha float64, beta float64, r float64) Hrir {
+		x := math.Sin(alpha) * math.Cos(beta)
+		rx := (math.Sqrt(1 - math.Pow(x/1,2.0)))
+		gamma := math.Acos(math.Cos(alpha) / rx)
+
+		// wrapping the javascript sign function for beta
+		var sign float64 = 0;
+		if(beta > 0) {
+			sign = 1
+		}
+
+		if(beta < 0){
+			sign = -1
+		}
+
+		gamma = sign * gamma
+
+		//Boundaries
+		if(gamma < -math.Pi * 3/4.0) {
+			gamma = -math.Pi * 3/4.0
+		}
+
+		if(gamma > math.Pi * (3/4.0+0.03125)) {
+			gamma = math.Pi * (3/4.0+0.03125)
+		}
+
+		return Hrir{ x: x, 	rx: rx,	gamma: gamma }
 }
 
 // The following code is based off cosinekitty.com/compass.html
-
-
 func EarthRadiusInMeters(latRadians float64) float64 {
 	a:= 6378137.0
 	b:= 6356752.3
@@ -139,11 +185,12 @@ func LocationToPoint(c Plane) Point{
 	return ret
 }
 
+// returns distance in kilometers
 func distanceBetweenPoints (pA Point, pB Point) float64{
 	dx := pA.px - pB.px
 	dy := pA.py - pB.py
 	dz := pA.pz - pB.pz
-	distance := math.Sqrt(dx*dx + dy*dy + dz*dz)
+	distance := math.Sqrt(dx*dx + dy*dy + dz*dz) / 1000
 	return distance
 }
 
@@ -162,9 +209,11 @@ func NormVectorDiff(b Point,a Point) NormalDiff {
 	return ret
 }
 
+// takes in two lat/long/elev coordinates returns the azimuth, distance, and altitude
 func calculate (a Plane, b Plane) Answer {
 	ap := LocationToPoint(a)
 	bp := LocationToPoint(b)
+
 	var azimuth float64 = 0;
 	var altitude float64 = 0;
 
