@@ -71,8 +71,7 @@ func playSound(me Plane, them Plane) {
 
 	// tested against her code and gives the same results
 	hrirVal:= sphericalToHrir(alpha,beta,r)
-	fmt.Println("hrirVal")
-	fmt.Println(hrirVal)
+
 }
 
 // McMullen's function
