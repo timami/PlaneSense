@@ -2,13 +2,79 @@ package main
 
 import "fmt"
 import "math"
+import "io/ioutil"
+import "reflect"
 
 func main() {
 
-	us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
-	them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
+	// us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
+	// them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
 
-	playSound(us, them)
+	// choose the hrtffile
+	hrtfFile:= "3"
+	loadHrtf(hrtfFile)
+
+	// playSound(us, them)
+}
+
+func loadHrtf(file string) {
+
+	rootPath:= "/home/nicolas/Desktop/hrtf-demo-from-site/hrir/"
+
+	left:= rootPath + "/" + file + "_l.dat"
+	right:= rootPath + "/" + file + "_r.dat"
+
+	datL, errL := ioutil.ReadFile(left)
+	datR, errR := ioutil.ReadFile(right)
+
+	if(errL != nil || errR != nil) {
+		log.Fatal(err)
+		return
+	}
+
+	fmt.Println(reflect.TypeOf(dat))
+
+	hrtf := Hrtf{ hrirL: [25][50][200], hrirR: [25][50][200] }
+
+	dataLString := string (datL)
+	azimuthsL := split(dataLString, "\n")
+
+	for azimuth := 0; azimuth < 25; azimuth++ {
+		elevationsL := split(azimuthsL, ",")
+
+		for elevation := 0; elevation < 50; elevation++ {
+
+			for k := 0; k < 200; k++ {
+				hrtf.hrirL[azimuth][elevation][k] = elevationsL[elevation + k*50];
+			}
+		}
+	}
+
+	dataRString := string (datR)
+	azimuthsR := split(dataRString, "\n")
+
+	for azimuth := 0; azimuth < 25; azimuth++ {
+		elevationsR := split(azimuthsR, ",")
+
+		for elevation := 0; elevation < 50; elevation++ {
+
+			for k := 0; k < 200; k++ {
+				hrtf.hrirR[azimuth][elevation][k] = elevationsR[elevation + k*50];
+			}
+		}
+	}
+
+	fmt.Println(hrtf)
+
+
+	// return hrtf{}
+}
+
+type Hrtf struct {
+
+	// 25 rows of azimuth 50 cols of elevation, 200 deep of "Where's The Fun" based off the cipic database
+	hrirL [25][50][200] float64
+	hrirR [25][50][200] float64
 }
 
 type Answer struct {
@@ -70,8 +136,8 @@ func playSound(me Plane, them Plane) {
 	alpha := ADA.azimuth //azimuth or phi based off wikipedia
 
 	// tested against her code and gives the same results
-	hrirVal:= sphericalToHrir(alpha,beta,r)
-
+	hrirVal:= sphericalToHrir(alpha, beta, r)
+	fmt.Println(hrirVal)
 }
 
 // McMullen's function
