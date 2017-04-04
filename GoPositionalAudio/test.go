@@ -2,7 +2,7 @@
 package main
 
 // Use this URL to import the go-sox library
-import "github.com/krig/go-sox"
+//import "github.com/krig/go-sox"
 import "log"
 import "flag"
 import "strconv"
