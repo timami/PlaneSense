@@ -249,6 +249,7 @@ func registerTrafficUpdate(ti TrafficInfo) {
 		}
 	*/ // Send all traffic to the websocket and let JS sort it out. This will provide user indication of why they see 1000 ES messages and no traffic.
 	trafficUpdate.SendJSON(ti)
+	/*call PLANESENSE*/
 }
 
 func makeTrafficReportMsg(ti TrafficInfo) []byte {
