@@ -5,7 +5,8 @@ import "io/ioutil"
 import "reflect"
 
 func main() {
-	h := &IntHeap{}
+	//wip
+	h := &AnswerHeap{}
 	recieveNewTraffic()
 
 	// us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
@@ -78,6 +79,7 @@ type Hrtf struct {
 	hrirR [25][50][200] float64
 }
 
+// Goes into trafficSound.go
 type Answer struct {
 	azimuth float64
 	distance float64
