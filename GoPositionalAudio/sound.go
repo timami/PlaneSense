@@ -2,11 +2,14 @@ package main
 
 import "math"
 import "io/ioutil"
-import "reflect"
+// import "reflect"
+import "fmt"
+import "strings"
+import "strconv"
 
 func main() {
-	h := &IntHeap{}
-	recieveNewTraffic()
+	// h := &IntHeap{}
+	// recieveNewTraffic()
 
 	// us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
 	// them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
@@ -29,42 +32,59 @@ func loadHrtf(file string) {
 	datR, errR := ioutil.ReadFile(right)
 
 	if(errL != nil || errR != nil) {
-		log.Fatal(err)
+		fmt.Println(errL)
+		fmt.Println(errR)
 		return
 	}
 
-	fmt.Println(reflect.TypeOf(dat))
-
-	hrtf := Hrtf{ hrirL: [25][50][200], hrirR: [25][50][200] }
+	var hrirL [25][50][200]float64
 
 	dataLString := string (datL)
-	azimuthsL := split(dataLString, "\n")
+	azimuthsL := strings.Split(dataLString, "\n")
 
 	for azimuth := 0; azimuth < 25; azimuth++ {
-		elevationsL := split(azimuthsL, ",")
+		elevationsL := strings.Split(azimuthsL[azimuth], ",")
 
 		for elevation := 0; elevation < 50; elevation++ {
 
 			for k := 0; k < 200; k++ {
-				hrtf.hrirL[azimuth][elevation][k] = elevationsL[elevation + k*50];
+				parsedValue, err := strconv.ParseFloat((elevationsL[elevation + k*50]), 64);
+
+				if(err != nil) {
+					fmt.Println(err);
+					return
+				}
+
+				hrirL[azimuth][elevation][k] = parsedValue
 			}
 		}
 	}
+
+	var hrirR [25][50][200]float64
 
 	dataRString := string (datR)
-	azimuthsR := split(dataRString, "\n")
+	azimuthsR := strings.Split(dataRString, "\n")
 
 	for azimuth := 0; azimuth < 25; azimuth++ {
-		elevationsR := split(azimuthsR, ",")
+		elevationsR := strings.Split(azimuthsR[azimuth], ",")
 
 		for elevation := 0; elevation < 50; elevation++ {
 
 			for k := 0; k < 200; k++ {
-				hrtf.hrirR[azimuth][elevation][k] = elevationsR[elevation + k*50];
+
+				parsedValue, err := strconv.ParseFloat((elevationsR[elevation + k*50]), 64);
+
+				if(err != nil) {
+					fmt.Println(err);
+					return
+				}
+
+				hrirR[azimuth][elevation][k] = parsedValue;
 			}
 		}
 	}
 
+	hrtf := Hrtf{ hrirL: hrirL, hrirR: hrirR }
 	fmt.Println(hrtf)
 
 
