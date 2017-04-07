@@ -8,8 +8,10 @@ import "strings"
 import "strconv"
 
 func main() {
-	// h := &IntHeap{}
-	// recieveNewTraffic()
+
+	//wip
+	h := &AnswerHeap{}
+	recieveNewTraffic()
 
 	// us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
 	// them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
@@ -98,6 +100,7 @@ type Hrtf struct {
 	hrirR [25][50][200] float64
 }
 
+// Goes into trafficSound.go
 type Answer struct {
 	azimuth float64
 	distance float64
