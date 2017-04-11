@@ -130,6 +130,18 @@ func main() {
 
 	// The last effect in the effect chain must be something that only consumes
 	// samples; in this case, we use the built-in handler that outputs data.
+	e := sox.CreateEffect(sox.FindEffect("input"))
+	e.Options(in)
+	// This becomes the first "effect" in the chain
+	chain.Add(e, in.Signal(), in.Signal())
+	e.Release()
+
+	e = sox.CreateEffect(sox.FindEffect("vol"))
+	e.Options("3dB")
+			// Add the effect to the end of the effects processing chain:
+	chain.Add(e, in.Signal(), in.Signal())
+	e.Release()
+
 	e = sox.CreateEffect(sox.FindEffect("output"))
 	e.Options(out)
 	chain.Add(e, in.Signal(), in.Signal())

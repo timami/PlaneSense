@@ -2,28 +2,200 @@ package main
 
 import "math"
 import "io/ioutil"
-// import "reflect"
+import "reflect"
 import "fmt"
 import "strings"
 import "strconv"
+import "github.com/krig/go-sox"
+import "log"
+// import "github.com/parnurzeal/gorequest"
+// import "encoding/json"
 
 func main() {
 
 	//wip
-	h := &AnswerHeap{}
-	recieveNewTraffic()
+	// h := &AnswerHeap{}
+	// recieveNewTraffic()
 
-	// us := Plane{Lat: 48, Lng: 11., Alt: 20000, TrueCourse : 84.4}
-	// them:= Plane{Lat: 49, Lng: 10, Alt: 22000, TrueCourse : 30.4}
+	us := Plane{Lat: 29.63, Lng: -82.35, Alt: 20000, TrueCourse : 0}
+	them:= Plane{Lat: 29.71, Lng: -82.336, Alt: 20000, TrueCourse : 30.4}
 
-	// choose the hrtffile
-	hrtfFile:= "3"
-	loadHrtf(hrtfFile)
+	ADA := calculate(us, them)
 
-	// playSound(us, them)
+	fmt.Println(ADA.azimuth);
+
+	ADA.azimuth = float64(int(ADA.azimuth + us.TrueCourse) % 360)
+		if ( ADA.altitude >= -30 && ADA.altitude <= 30 ) {
+
+			// Play flat left or giht
+			play_left_or_right("/home/nicolas/Audio/270_360/threepiovertwodirectleft.mp3","/home/nicolas/Audio/90_180/piovertwodirectright.mp3", "/home/nicolas/Audio/0_90/0pidirectinfront.mp3", ADA.azimuth);
+		}
+
+		if ( ADA.altitude > 30 && ADA.altitude <= 75 ) {
+				// Play upper left or right
+				play_left_or_right("/home/nicolas/Audio/270_360/topleft.mp3", "/home/nicolas/Audio/0_90/topright.mp3", "/home/nicolas/Audio/0_90/0pidirectinfront.mp3", ADA.azimuth);
+				return
+		}
+		if ( ADA.altitude < -30 && ADA.altitude >= -75) {
+				// Play bottom left or bottom right
+				play_left_or_right("/home/nicolas/Audio/270_360/bottomleftfront.mp3","/home/nicolas/Audio/0_90/bottomright.mp3", "/home/nicolas/Audio/0_90/0pidirectinfront.mp3", ADA.azimuth);
+				return
+		}
+		if ( ADA.altitude > 75 ) {
+
+			// Play top
+			top_bottom("/home/nicolas/Audio/0_90/top.mp3")
+			return
+		}
+		if ( ADA.altitude < -75 ) {
+			// Play bottom
+			top_bottom("/home/nicolas/Audio/270_360/bottom.mp3")
+
+			return
+		}
+		// playSound(us, them)
+
+	}
+
+
+	// url:="http://localhost:3000/"
+	// fmt.Println("URL:>", url)
+	//
+	// var jsonString string = "{ \"ada\": { \"azimuth\": " + strconv.FormatFloat(ADA.azimuth, 'f', -1, 64) +  ",\"altitude\": " + strconv.FormatFloat(ADA.altitude, 'f', -1, 64) + ",\"distance\": " + strconv.FormatFloat(ADA.distance, 'f', -1, 64) +" } }";
+	//
+	// request := gorequest.New()
+	// resp, body, errs := request.Post(url).
+	// 	Send(jsonString).
+	//   End()
+	//
+	// 	if(errs != nil) {
+	// 		fmt.Println(errs)
+	// 	}
+	//
+	// fmt.Println("response Status:", resp.Status)
+	// fmt.Println("response Headers:", resp.Header)
+	// fmt.Println("response Body:", string(body))
+
+
+// }
+
+func play_left_or_right(Left string, Right string, front string, azimuth float64) {
+
+	if !sox.Init() {
+		log.Fatal("Failed to initialize SoX")
+	}
+	// Make sure to call Quit before terminating
+	defer sox.Quit()
+
+	var in *sox.Format;
+
+	fmt.Println(azimuth);
+
+	if ( azimuth >= 30 ) {
+		// play right sound
+
+		in = sox.OpenRead(Right)
+		if in == nil {
+			log.Fatal("Failed to open input file")
+		}
+		defer in.Release()
+
+
+	} else if azimuth > -30 || azimuth < 30  {
+		in = sox.OpenRead(front)
+		if in == nil {
+			log.Fatal("Failed to open input file")
+		}
+		defer in.Release()
+	}	else {
+		// play left sound
+
+		in = sox.OpenRead(Left)
+		if in == nil {
+			log.Fatal("Failed to open input file")
+		}
+		defer in.Release()
+
+	}
+
+
+	out := sox.OpenWrite("default", in.Signal(), nil, "alsa")
+	if out == nil {
+		out = sox.OpenWrite("default", in.Signal(), nil, "pulseaudio")
+		if out == nil {
+			log.Fatal("Failed to open output device")
+		}
+	}
+
+	chain := sox.CreateEffectsChain(in.Encoding(), out.Encoding())
+
+	e := sox.CreateEffect(sox.FindEffect("input"))
+	e.Options(in)
+	// This becomes the first "effect" in the chain
+	chain.Add(e, in.Signal(), in.Signal())
+	e.Release()
+
+	e = sox.CreateEffect(sox.FindEffect("vol"))
+	e.Options("3dB")
+			// Add the effect to the end of the effects processing chain:
+chain.Add(e, in.Signal(), in.Signal())
+	e.Release()
+
+	e = sox.CreateEffect(sox.FindEffect("output"))
+	e.Options(out)
+	chain.Add(e, in.Signal(), in.Signal())
+	e.Release()
+
+	chain.Flow()
+	defer chain.Release()
+
+	// Close the output device before exiting
+	defer out.Release()
 }
 
-func loadHrtf(file string) {
+func top_bottom(side string) {
+
+	if !sox.Init() {
+		log.Fatal("Failed to initialize SoX")
+	}
+	// Make sure to call Quit before terminating
+	defer sox.Quit()
+
+
+	in := sox.OpenRead(side)
+	if in == nil {
+		log.Fatal("Failed to open input file")
+	}
+
+	defer in.Release()
+
+	out := sox.OpenWrite("default", in.Signal(), nil, "alsa")
+	if out == nil {
+		out = sox.OpenWrite("default", in.Signal(), nil, "pulseaudio")
+		if out == nil {
+			log.Fatal("Failed to open output device")
+		}
+	}
+
+	chain := sox.CreateEffectsChain(in.Encoding(), out.Encoding())
+
+	chain.Flow()
+	defer chain.Release()
+
+	// Close the output device before exiting
+	defer out.Release()
+}
+
+
+// Flow data from in to out via the samples buffer
+func flow(in, out *sox.Format, samples []sox.Sample) {
+	n := uint(len(samples))
+	for number_read := in.Read(samples, n); number_read > 0; number_read = in.Read(samples, n) {
+		out.Write(samples, uint(number_read))
+	}
+}
+
+func loadHrtf(file string) Hrtf {
 
 	rootPath:= "/home/nicolas/Desktop/hrtf-demo-from-site/hrir/"
 
@@ -36,7 +208,7 @@ func loadHrtf(file string) {
 	if(errL != nil || errR != nil) {
 		fmt.Println(errL)
 		fmt.Println(errR)
-		return
+		return Hrtf{}
 	}
 
 	var hrirL [25][50][200]float64
@@ -54,7 +226,7 @@ func loadHrtf(file string) {
 
 				if(err != nil) {
 					fmt.Println(err);
-					return
+					return Hrtf{}
 				}
 
 				hrirL[azimuth][elevation][k] = parsedValue
@@ -78,7 +250,7 @@ func loadHrtf(file string) {
 
 				if(err != nil) {
 					fmt.Println(err);
-					return
+					return Hrtf{}
 				}
 
 				hrirR[azimuth][elevation][k] = parsedValue;
@@ -87,10 +259,10 @@ func loadHrtf(file string) {
 	}
 
 	hrtf := Hrtf{ hrirL: hrirL, hrirR: hrirR }
-	fmt.Println(hrtf)
+	// fmt.Println(hrtf)
 
 
-	// return hrtf{}
+	return hrtf
 }
 
 type Hrtf struct {
@@ -146,6 +318,12 @@ type Hrir struct {
 	gamma float64
 }
 
+type Hrir_Buffer struct {
+	left []float64
+	right []float64
+
+}
+
 func playSound(me Plane, them Plane) {
 
 	// aziumuth, distance, altitude
@@ -162,6 +340,99 @@ func playSound(me Plane, them Plane) {
 	// tested against her code and gives the same results
 	hrirVal:= sphericalToHrir(alpha, beta, r)
 	fmt.Println(hrirVal)
+
+	// choose the hrtffile
+	hrtfFile:= "3"
+	hrtf:= loadHrtf(hrtfFile)
+
+	// fmt.Println(hrtf)
+
+	// go-sox loading sounds
+	var samples [2048]sox.Sample
+
+	if !sox.Init() {
+		log.Fatal("Failed to initialize SoX")
+	}
+	defer sox.Quit()
+
+	// Open the input file.
+	in := sox.OpenRead("./planecloned.ogg");
+	if in == nil {
+		log.Fatal("Failed to open input file")
+	}
+
+	// Set up the memory buffer for writing
+	buf := sox.NewMemstream()
+	defer buf.Release()
+
+	out := sox.OpenMemstreamWrite(buf, in.Signal(), nil, "sox")
+	if out == nil {
+		log.Fatal("Failed to open memory buffer")
+	}
+
+	flow(in, out, samples[:])
+	out.Release()
+	in.Release()
+
+	// this should now be a buffer sound of the
+	in = sox.OpenMemRead(buf)
+	if in == nil {
+		log.Fatal("Failed to open memory buffer for reading")
+		}
+
+	// print go deep and explore
+	inType := reflect.TypeOf(in.Signal())
+	for i:= 0; i < inType.NumMethod(); i++ {
+		fmt.Println(inType.Method(i))
+	}
+
+	// update convolver and pass in theta and phi
+	updateConvolver(alpha, beta, hrtf, in.Signal().Rate());
+
+}
+
+func updateConvolver(theta float64, phi float64, hrtf Hrtf, rate float64) {
+
+	// linear interpolation taken from main.js line 440 from Online updating convolver
+
+	// get sample rate
+	var fs float64= 44100;
+	var hrir_length = int(math.Ceil(200* rate / fs))
+	var hrir_lengthsixtyfour = math.Ceil(200* rate / fs)
+
+
+	var q float64
+	var d float64
+	var k_p float64
+	var k_n float64
+
+	// guess
+	left:= make([]float64, hrir_length)
+	right:= make([]float64, hrir_length)
+
+// linear interpolation of the hrir to the sample rate
+	var k float64 = 0;
+
+	for ; k < hrir_lengthsixtyfour; k++ {
+		q = k / (hrir_lengthsixtyfour) * 200;
+    k_p = math.Floor(q);
+    k_n = math.Ceil(q);
+    d = q - k_p;
+
+		fmt.Println("Theta: "+ strconv.FormatFloat(theta, 'f', -1, 64))
+		fmt.Println("Phi: "+ strconv.FormatFloat(phi, 'f', -1, 64))
+		fmt.Println("k_p: "+ strconv.FormatFloat(k_p, 'f', -1, 64))
+		fmt.Println("index: " + strconv.FormatFloat(k, 'f', -1, 64))
+		fmt.Println("arrayLen: " + strconv.FormatFloat(hrir_lengthsixtyfour, 'f', -1, 64))
+
+
+
+    left[int(k)] = hrtf.hrirL[int(theta)][int(phi)][int(k_p)] * (1.0-d) + hrtf.hrirL[int(theta)][int(phi)][int(k_n)] * d;
+    right[int(k)] = hrtf.hrirR[int(theta)][int(phi)][int(k_p)] * (1.0-d) + hrtf.hrirR[int(theta)][int(phi)][int(k_n)] * d;
+	}
+
+
+
 }
 
 // McMullen's function
