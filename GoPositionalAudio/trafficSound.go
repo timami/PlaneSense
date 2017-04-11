@@ -31,7 +31,7 @@ func (h *AnswerHeap) Pop() interface{} {
 
 // This example inserts several ints into an IntHeap, checks the minimum,
 // and removes them in order of priority.
-func recieveTrafficUpdate() {
+func recieveTrafficUpdate(h *AnswerHeap) {
 	heap.Init(h)
 	heap.Push(h, 3)
 	fmt.Printf("minimum: %d\n", (*h)[0])
