@@ -17,6 +17,7 @@ func main() {
 	// h := &AnswerHeap{}
 	// recieveNewTraffic()
 
+
 	us := Plane{Lat: 29.63, Lng: -82.35, Alt: 20000, TrueCourse : 0}
 	them:= Plane{Lat: 29.71, Lng: -82.336, Alt: 20000, TrueCourse : 30.4}
 
