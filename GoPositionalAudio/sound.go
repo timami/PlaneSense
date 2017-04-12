@@ -8,20 +8,66 @@ import "strings"
 import "strconv"
 import "github.com/krig/go-sox"
 import "log"
+import "container/heap"
 // import "github.com/parnurzeal/gorequest"
 // import "encoding/json"
+
+// global variable for our plane
+var us Plane;
+
+// start minheap code
+type PlaneHeap []Plane
+
+func (h PlaneHeap) Len() int { return len(h) }
+func (h PlaneHeap) Less(i, j int) bool {
+
+	adaplane1 := calculate(us, h[i])
+	adaplane2 := calculate(us, h[j])
+
+	return adaplane1.distance < adaplane2.distance
+}
+
+func (h PlaneHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *PlaneHeap) Push(x interface{}) {
+    // Push and Pop use pointer receivers because they modify the slice's length,
+    // not just its contents.
+    *h = append(*h, x.(Plane))
+}
+
+func (h *PlaneHeap) Pop() interface{} {
+    old := *h
+    n := len(old)
+    x := old[n-1]
+    *h = old[0 : n-1]
+    return x
+}
+// end minheap code
+
+
 
 func main() {
 
 	//wip
 	// h := &AnswerHeap{}
 	// recieveNewTraffic()
+	us = Plane{Lat: 29.63, Lng: -82.35, Alt: 20000, TrueCourse : 0}
+	ph := &PlaneHeap{}
+	heap.Init(ph)
 
+	them1:= Plane{Lat: 29.71, Lng: -82.336, Alt: 20000, TrueCourse : 30.4}
+	them2:= Plane{Lat: 29.33, Lng: -82.11, Alt: 40000, TrueCourse : 30.4}
+	them3:= Plane{Lat: 29.33, Lng: -82.11, Alt: 20000, TrueCourse : 30.4}
 
-	us := Plane{Lat: 29.63, Lng: -82.35, Alt: 20000, TrueCourse : 0}
-	them:= Plane{Lat: 29.71, Lng: -82.336, Alt: 20000, TrueCourse : 30.4}
+	heap.Push(ph, them1)
+	heap.Push(ph, them2)
+	heap.Push(ph, them3)
 
-	ADA := calculate(us, them)
+	for ph.Len() > 0 {
+		fmt.Println(heap.Pop(ph))
+	}
+
+	ADA := calculate(us, them1)
 
 	fmt.Println(ADA.azimuth);
 
