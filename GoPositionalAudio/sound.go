@@ -9,11 +9,12 @@ import "strconv"
 import "github.com/krig/go-sox"
 import "log"
 import "container/heap"
-// import "github.com/parnurzeal/gorequest"
-// import "encoding/json"
+import "github.com/parnurzeal/gorequest"
+import "github.com/tidwall/gjson"
 
 // global variable for our plane
 var us Plane;
+var APIKey string = "MASHAPEAPIKEYREPLACE";
 
 // start minheap code
 type PlaneHeap []Plane
@@ -44,38 +45,97 @@ func (h *PlaneHeap) Pop() interface{} {
 }
 // end minheap code
 
-
-
 func main() {
 
-	//wip
-	// h := &AnswerHeap{}
-	// recieveNewTraffic()
-	us = Plane{Lat: 29.63, Lng: -82.35, Alt: 20000, TrueCourse : 0}
+	if(strings.Compare(APIKey, "MASHAPEAPIKEYREPLACE") == 0) {
+		fmt.Println("Please replace API key with a valid one from Mashape!")
+		return
+	}
+
+	// our coordinates which we will pull from google maps
+	us = Plane{Lat: 29.63, Lng: -82.35, Alt: 10000}
+
+	// initialize the PlaneHeap
 	ph := &PlaneHeap{}
 	heap.Init(ph)
 
-	//West
-	them1:= Plane{Lat: 29.63, Lng: -82.53, Alt: 20000, TrueCourse : 30.4}
-	//East
-	them2:= Plane{Lat: 29.63, Lng: -82.11, Alt: 40000, TrueCourse : 30.4}
-	//North
-	them3:= Plane{Lat: 29.66, Lng: -82.35, Alt: 40000, TrueCourse : 30.4}
-	//South
-	them4:= Plane{Lat: 29.60, Lng: -82.35, Alt: 20000, TrueCourse : 30.4}
+	// make get request to grab all planes reporting
+	url:="https://opensky-network.p.mashape.com/states/all"
+	fmt.Println("URL:>", url)
 
-	heap.Push(ph, them1)
-	heap.Push(ph, them2)
-	heap.Push(ph, them3)
-	heap.Push(ph, them4)
+	request := gorequest.New()
+	resp, body, errs := request.Get(url).
+	Set("X-Mashape-Key", "MASHAPEAPIKEYREPLACE").
+	Set("Accept", "application/json").
+	End()
 
+	if(errs != nil) {
+		fmt.Println(errs)
+		fmt.Println(resp)
+		return;
+	}
+
+	// ** DEBUG **
+	// fmt.Println("response Status:", errs)
+	// fmt.Println("response Status:", resp.Status)
+	// fmt.Println("response Headers:", resp.Header)
+	// fmt.Println("response Body:", string(body))
+
+	json := string(body)
+
+	// get all states and loop through them and datamarshal them into a plane struct
+	planeVectors:= gjson.Get(json, "states")
+	planeVectors.ForEach(func(key, value gjson.Result) bool {
+		// fmt.Println(value.Array()[5].Float()) // Long
+		// fmt.Println(value.Array()[6].Float()) // Lat
+		// fmt.Println(value.Array()[7].Float()) // Alt
+		// fmt.Println(value.Array()[1].String()) // Alt
+
+
+		// grab the plane data (more info can be found at https://opensky-network.org/mashape/#validity)
+		planeArr:= value.Array()
+		tempLng:= planeArr[5].Float() // Lng
+		tempLat:= planeArr[6].Float() // Lat
+		tempAlt:= planeArr[7].Float() // Alt
+		tempTail:= planeArr[1].String() // Callsign
+
+		// push into minheap
+		if(tempLat != 0 && tempLng != 0 && tempAlt != 0) {
+			tempPlane := Plane{Lat: tempLat, Lng: tempLng, Alt: tempAlt, Tail: tempTail}
+			heap.Push(ph, tempPlane)
+		}
+
+		return true;
+	})
+
+	// Manual Sound Coordination for debug purposes
+
+	// West
+	// them1:= Plane{Lat: 29.63, Lng: -82.53, Alt: 20000, TrueCourse : 30.4}
+	// East
+	// them2:= Plane{Lat: 29.63, Lng: -82.11, Alt: 40000, TrueCourse : 30.4}
+	// North
+	// them3:= Plane{Lat: 29.66, Lng: -82.35, Alt: 40000, TrueCourse : 30.4}
+	// //South
+	// them4:= Plane{Lat: 29.60, Lng: -82.35, Alt: 20000, TrueCourse : 30.4}
+
+	// heap.Push(ph, them1)
+	// heap.Push(ph, them2)
+	// heap.Push(ph, them3)
+	// heap.Push(ph, them4)
+
+
+	// ** DEBUG **
 	// for ph.Len() > 0 {
-	// 	fmt.Println(heap.Pop(ph))
+	// fmt.Println(heap.Pop(ph))
 	// }
 
-// heap.pop(ph)
+	// print out closestPlane Info
+	closestPlane := heap.Pop(ph).(Plane)
+	fmt.Println(closestPlane)
 
-	ADA := calculate(us, them3)
+	ADA := calculate(us, closestPlane)
+
 
 	fmt.Println(ADA.azimuth);
 
@@ -108,18 +168,6 @@ func main() {
 
 			return
 		}
-		// playSound(us, them)225
-	// url:="http://localhost:3000/"
-	// fmt.Println("URL:>", url)
-	//
-	// var jsonString string = "{ \"ada\": { \"azimuth\": " + strconv.FormatFloat(ADA.azimuth, 'f', -1, 64) +  ",\"altitude\": " + strconv.FormatFloat(ADA.altitude, 'f', -1, 64) + ",\"distance\": " + strconv.FormatFloat(ADA.distance, 'f', -1, 64) +" } }";
-	//
-	// request := gorequest.New()225
-	//   End()225
-	//
-	// fmt.Println("response Status:", resp.Status)
-	// fmt.Println("response Headers:", resp.Header)
-	// fmt.Println("response Body:", string(body))
 
 	}
 
