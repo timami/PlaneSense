@@ -55,19 +55,27 @@ func main() {
 	ph := &PlaneHeap{}
 	heap.Init(ph)
 
-	them1:= Plane{Lat: 29.71, Lng: -82.336, Alt: 20000, TrueCourse : 30.4}
-	them2:= Plane{Lat: 29.33, Lng: -82.11, Alt: 40000, TrueCourse : 30.4}
-	them3:= Plane{Lat: 29.33, Lng: -82.11, Alt: 20000, TrueCourse : 30.4}
+	//West
+	them1:= Plane{Lat: 29.63, Lng: -82.53, Alt: 20000, TrueCourse : 30.4}
+	//East
+	them2:= Plane{Lat: 29.63, Lng: -82.11, Alt: 40000, TrueCourse : 30.4}
+	//North
+	them3:= Plane{Lat: 29.66, Lng: -82.35, Alt: 40000, TrueCourse : 30.4}
+	//South
+	them4:= Plane{Lat: 29.60, Lng: -82.35, Alt: 20000, TrueCourse : 30.4}
 
 	heap.Push(ph, them1)
 	heap.Push(ph, them2)
 	heap.Push(ph, them3)
+	heap.Push(ph, them4)
 
-	for ph.Len() > 0 {
-		fmt.Println(heap.Pop(ph))
-	}
+	// for ph.Len() > 0 {
+	// 	fmt.Println(heap.Pop(ph))
+	// }
 
-	ADA := calculate(us, them1)
+// heap.pop(ph)
+
+	ADA := calculate(us, them3)
 
 	fmt.Println(ADA.azimuth);
 
@@ -100,31 +108,20 @@ func main() {
 
 			return
 		}
-		// playSound(us, them)
-
-	}
-
-
+		// playSound(us, them)225
 	// url:="http://localhost:3000/"
 	// fmt.Println("URL:>", url)
 	//
 	// var jsonString string = "{ \"ada\": { \"azimuth\": " + strconv.FormatFloat(ADA.azimuth, 'f', -1, 64) +  ",\"altitude\": " + strconv.FormatFloat(ADA.altitude, 'f', -1, 64) + ",\"distance\": " + strconv.FormatFloat(ADA.distance, 'f', -1, 64) +" } }";
 	//
-	// request := gorequest.New()
-	// resp, body, errs := request.Post(url).
-	// 	Send(jsonString).
-	//   End()
-	//
-	// 	if(errs != nil) {
-	// 		fmt.Println(errs)
-	// 	}
+	// request := gorequest.New()225
+	//   End()225
 	//
 	// fmt.Println("response Status:", resp.Status)
 	// fmt.Println("response Headers:", resp.Header)
 	// fmt.Println("response Body:", string(body))
 
-
-// }
+	}
 
 func play_left_or_right(Left string, Right string, front string, azimuth float64) {
 
@@ -136,9 +133,12 @@ func play_left_or_right(Left string, Right string, front string, azimuth float64
 
 	var in *sox.Format;
 
-	fmt.Println(azimuth);
+	fmt.Println(azimuth)
 
-	if ( azimuth >= 30 ) {
+	moddedAzimuth  := int(azimuth) % 360.0
+	fmt.Println(moddedAzimuth);
+
+	if ( moddedAzimuth >= 45 && moddedAzimuth < 135 ) {
 		// play right sound
 
 		in = sox.OpenRead(Right)
@@ -148,7 +148,7 @@ func play_left_or_right(Left string, Right string, front string, azimuth float64
 		defer in.Release()
 
 
-	} else if azimuth > -30 || azimuth < 30  {
+	} else if azimuth >= 315 || azimuth < 45  {
 		in = sox.OpenRead(front)
 		if in == nil {
 			log.Fatal("Failed to open input file")
@@ -166,39 +166,39 @@ func play_left_or_right(Left string, Right string, front string, azimuth float64
 	}
 
 
-	out := sox.OpenWrite("default", in.Signal(), nil, "alsa")
-	if out == nil {
-		out = sox.OpenWrite("default", in.Signal(), nil, "pulseaudio")
+		out := sox.OpenWrite("default", in.Signal(), nil, "alsa")
 		if out == nil {
-			log.Fatal("Failed to open output device")
+			out = sox.OpenWrite("default", in.Signal(), nil, "pulseaudio")
+			if out == nil {
+				log.Fatal("Failed to open output device")
+			}
 		}
+
+		chain := sox.CreateEffectsChain(in.Encoding(), out.Encoding())
+
+		e := sox.CreateEffect(sox.FindEffect("input"))
+		e.Options(in)
+		// This becomes the first "effect" in the chain
+		chain.Add(e, in.Signal(), in.Signal())
+		e.Release()
+
+		e = sox.CreateEffect(sox.FindEffect("vol"))
+		e.Options("3dB")
+		// Add the effect to the end of the effects processing chain:
+		chain.Add(e, in.Signal(), in.Signal())
+		e.Release()
+
+		e = sox.CreateEffect(sox.FindEffect("output"))
+		e.Options(out)
+		chain.Add(e, in.Signal(), in.Signal())
+		e.Release()
+
+		chain.Flow()
+		defer chain.Release()
+
+		// Close the output device before exiting
+		defer out.Release()
 	}
-
-	chain := sox.CreateEffectsChain(in.Encoding(), out.Encoding())
-
-	e := sox.CreateEffect(sox.FindEffect("input"))
-	e.Options(in)
-	// This becomes the first "effect" in the chain
-	chain.Add(e, in.Signal(), in.Signal())
-	e.Release()
-
-	e = sox.CreateEffect(sox.FindEffect("vol"))
-	e.Options("3dB")
-			// Add the effect to the end of the effects processing chain:
-chain.Add(e, in.Signal(), in.Signal())
-	e.Release()
-
-	e = sox.CreateEffect(sox.FindEffect("output"))
-	e.Options(out)
-	chain.Add(e, in.Signal(), in.Signal())
-	e.Release()
-
-	chain.Flow()
-	defer chain.Release()
-
-	// Close the output device before exiting
-	defer out.Release()
-}
 
 func top_bottom(side string) {
 
