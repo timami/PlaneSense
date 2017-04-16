@@ -131,6 +131,7 @@ func main() {
 	// }
 
 	// print out closestPlane Info
+	while (heap.Len(ph).(Plane) > 0) {
 	closestPlane := heap.Pop(ph).(Plane)
 	fmt.Println(closestPlane)
 
@@ -168,7 +169,7 @@ func main() {
 
 			return
 		}
-
+	}
 	}
 
 func play_left_or_right(Left string, Right string, front string, back string, azimuth float64) {
