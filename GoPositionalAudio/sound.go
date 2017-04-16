@@ -14,7 +14,7 @@ import "github.com/tidwall/gjson"
 
 // global variable for our plane
 var us Plane;
-var APIKey string = "key1";
+var APIKey string = "KEY1";
 
 // start minheap code
 type PlaneHeap []Plane
@@ -47,10 +47,6 @@ func (h *PlaneHeap) Pop() interface{} {
 
 func main() {
 
-	if(strings.Compare(APIKey, "key1") == 0) {
-		fmt.Println("Please replace API key with a valid one from Mashape!")
-		return
-	}
 
 	// our coordinates which we will pull from google maps
 	us = Plane{Lat: 29.63, Lng: -82.35, Alt: 10000}
@@ -65,7 +61,7 @@ func main() {
 
 	request := gorequest.New()
 	resp, body, errs := request.Get(url).
-	Set("X-Mashape-Key", "key1").
+	Set("X-Mashape-Key", "KEY1").
 	Set("Accept", "application/json").
 	End()
 
@@ -131,7 +127,7 @@ func main() {
 	// }
 
 	// print out closestPlane Info
-	while (heap.Len(ph).(Plane) > 0) {
+	for (ph.Len() > 0) {
 	closestPlane := heap.Pop(ph).(Plane)
 	fmt.Println(closestPlane)
 
