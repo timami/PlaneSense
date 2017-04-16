@@ -143,28 +143,28 @@ func main() {
 		if ( ADA.altitude >= -30 && ADA.altitude <= 30 ) {
 
 			// Play flat left or giht
-			play_left_or_right("270_360/threepiovertwodirectleft.mp3","90_180/piovertwodirectright.mp3", "0_90/0pidirectinfront.mp3", "back/beep-09.mp3", ADA.azimuth);
+			play_left_or_right("270_360/threepiovertwodirectleft1.mp3","90_180/piovertwodirectright1.mp3", "0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
 		}
 
 		if ( ADA.altitude > 30 && ADA.altitude <= 75 ) {
 				// Play upper left or right
-				play_left_or_right("270_360/topleft.mp3", "0_90/topright.mp3", "0_90/0pidirectinfront.mp3", "back/beep-09.mp3", ADA.azimuth);
+				play_left_or_right("270_360/topleft1.mp3", "0_90/topright1.mp3", "0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
 				return
 		}
 		if ( ADA.altitude < -30 && ADA.altitude >= -75) {
 				// Play bottom left or bottom right
-				play_left_or_right("270_360/bottomleftfront.mp3","0_90/bottomright.mp3", "0_90/0pidirectinfront.mp3", "back/beep-09.mp3", ADA.azimuth);
+				play_left_or_right("270_360/bottomleftfront1.mp3","0_90/bottomright1.mp3", "0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
 				return
 		}
 		if ( ADA.altitude > 75 ) {
 
 			// Play top
-			top_bottom("/home/nicolas/Audio/0_90/top.mp3")
+			top_bottom("/home/nicolas/Audio/0_90/top1.mp3")
 			return
 		}
 		if ( ADA.altitude < -75 ) {
 			// Play bottom
-			top_bottom("/home/nicolas/Audio/270_360/bottom.mp3")
+			top_bottom("/home/nicolas/Audio/270_360/bottom1.mp3")
 
 			return
 		}
