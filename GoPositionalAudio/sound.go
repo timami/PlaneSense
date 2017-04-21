@@ -14,7 +14,7 @@ import "github.com/tidwall/gjson"
 
 // global variable for our plane
 var us Plane;
-var APIKey string = "KEY1";
+var APIKey string = "486N8PAm8TmshhIl8jEfWdqtp4hNp1yHSNSjsn69rA4oEX2asw";
 
 // start minheap code
 type PlaneHeap []Plane
@@ -61,7 +61,7 @@ func main() {
 
 	request := gorequest.New()
 	resp, body, errs := request.Get(url).
-	Set("X-Mashape-Key", "KEY1").
+	Set("X-Mashape-Key", APIKey).
 	Set("Accept", "application/json").
 	End()
 
@@ -129,7 +129,14 @@ func main() {
 	// print out closestPlane Info
 	for (ph.Len() > 0) {
 	closestPlane := heap.Pop(ph).(Plane)
-	fmt.Println(closestPlane)
+	fmt.Println("\n\n")
+	fmt.Printf("Lng: %f\n", closestPlane.Lng);
+	fmt.Printf("Lat: %f\n", closestPlane.Lat);
+	fmt.Printf("Alt: %f\n", closestPlane.Alt);
+	fmt.Println("Callsign: " + closestPlane.Tail);
+
+
+
 
 	ADA := calculate(us, closestPlane)
 
@@ -138,28 +145,40 @@ func main() {
 
 	ADA.azimuth = float64(int(ADA.azimuth + us.TrueCourse) % 360)
 		if ( ADA.altitude >= -30 && ADA.altitude <= 30 ) {
-
+			fmt.Println("Level");
 			// Play flat left or giht
-			play_left_or_right("270_360/threepiovertwodirectleft1.mp3","90_180/piovertwodirectright1.mp3", "0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
+			play_left_or_right("./270_360/threepiovertwodirectleft1.mp3","./90_180/piovertwodirectright1.mp3", "./0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
 		}
 
 		if ( ADA.altitude > 30 && ADA.altitude <= 75 ) {
+				fmt.Println("Upper");
+
 				// Play upper left or right
-				play_left_or_right("270_360/topleft1.mp3", "0_90/topright1.mp3", "0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
+				play_left_or_right("./270_360/topleft1.mp3", "./0_90/topright1.mp3", "./0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
 				return
 		}
 		if ( ADA.altitude < -30 && ADA.altitude >= -75) {
+
+				fmt.Println("Lower");
+
 				// Play bottom left or bottom right
-				play_left_or_right("270_360/bottomleftfront1.mp3","0_90/bottomright1.mp3", "0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
+				play_left_or_right("./270_360/bottomleftfront1.mp3","./0_90/bottomright1.mp3", "./0_90/0pidirectinfront1.mp3", "back/beep-09.mp3", ADA.azimuth);
 				return
 		}
 		if ( ADA.altitude > 75 ) {
+
+			fmt.Println("Top");
+
 
 			// Play top
 			top_bottom("/home/nicolas/Audio/0_90/top1.mp3")
 			return
 		}
 		if ( ADA.altitude < -75 ) {
+
+			fmt.Println("Bottom");
+
+
 			// Play bottom
 			top_bottom("/home/nicolas/Audio/270_360/bottom1.mp3")
 
@@ -186,6 +205,8 @@ func play_left_or_right(Left string, Right string, front string, back string, az
 	if ( moddedAzimuth >= 45 && moddedAzimuth < 135 ) {
 		// play right sound
 
+		fmt.Println("Right");
+
 		in = sox.OpenRead(Right)
 		if in == nil {
 			log.Fatal("Failed to open input file")
@@ -194,12 +215,20 @@ func play_left_or_right(Left string, Right string, front string, back string, az
 
 
 	} else if azimuth >= 315 || azimuth < 45  {
+
+		fmt.Println("Front");
+
+
 		in = sox.OpenRead(front)
 		if in == nil {
 			log.Fatal("Failed to open input file")
 		}
 		defer in.Release()
 	}	else if azimuth >= 135 || azimuth < 225  {
+
+		fmt.Println("Back");
+
+
 		in = sox.OpenRead(back)
 		if in == nil {
 			log.Fatal("Failed to open input file")
@@ -207,6 +236,9 @@ func play_left_or_right(Left string, Right string, front string, back string, az
 		defer in.Release()
 	} else {
 		// play left sound
+
+		fmt.Println("Left");
+
 
 		in = sox.OpenRead(Left)
 		if in == nil {
