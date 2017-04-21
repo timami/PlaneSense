@@ -12,6 +12,8 @@ Table of Contents
 .. 2.2 Requirements
 .. 2.3 Go Set up
 .. 2.4 To get the libsox library to work
+3 Running
+4 Important files
 
 
 
@@ -69,3 +71,19 @@ Table of Contents
   • sudo make -s
   • sudo make install
   • go get -u github.com/krig/go-sox
+
+
+3 Running
+═════════
+
+  ┌────
+  │ % cd ./GoPositionalAudio 
+  │ % go run sound.go
+  └────
+
+
+4 Important files
+═════════════════
+
+  Inside the GoPositionalAudio folder
+  sound.go: Main driver and implementation

@@ -34,3 +34,14 @@ export PATH=$PATH:/home/<user>/go/bin/
 - sudo make -s
 - sudo make install
 - go get -u github.com/krig/go-sox
+
+  
+* Running
+#+BEGIN_SRC bash
+ % cd ./GoPositionalAudio 
+ % go run sound.go
+#+END_SRC
+
+* Important files
+Inside the GoPositionalAudio folder
+- sound.go :: Main driver and implementation
