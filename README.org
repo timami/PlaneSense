@@ -1,4 +1,5 @@
 #+TITLE: PlaneSense
+#+AUTHOR: 
 
 * Purpose
 To enable pilots to hear planes around them.

@@ -1,8 +1,6 @@
-			    ━━━━━━━━━━━━━━━
+			      ━━━━━━━━━━━━
 			       PLANESENSE
-
-			     Matthew Bregg
-			    ━━━━━━━━━━━━━━━
+			      ━━━━━━━━━━━━
 
 
 Table of Contents
